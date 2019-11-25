@@ -20,3 +20,17 @@ With scalable and fast paste variational inference however, the , former intract
 
 We emphasis on the sparse probit model of a selective prior $p(h|\Theta) = Ber(h|\pi_h)$ with $h \in [1;0]^{N,H}$, H is the length of our parameter space and N the numper of data points.
 This preselection refers to many previouse researches and works shrinking the problem of large and complex parameter spaces to computational tractable mappings without loosing computational recovery of the parameter space.
+
+## requirements
+
+for the modules:
+  PyTorch (latest)
+  Numpy (latest)
+  math
+
+for the test script:
+  da_test.csv
+  Pandas (latest)
+
+Backend:
+  YAML (latest) ~ sorry no better format jet---

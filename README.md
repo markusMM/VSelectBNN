@@ -1,7 +1,7 @@
 # VSelectBNN
 Another version for probabilistic weights and variable selection sampling.
 
-This repositiory basically reproduces Bayes by Backprop is a minimalistic way and uses optimization in form of creeping (unparameterized) samples. This, especially in the variable selection problem, assuming a Bernoulli prior, provides a marginal distribution over many possible frozen states of the system.
+This repositiory basically reproduces Bayes by Backprop in a minimalistic way and uses optimization in form of creeping (unparameterized) samples. This, especially in the variable selection problem, assuming a Bernoulli prior, provides a marginal distribution over many possible frozen states of the system.
 
 Additionally, the mean field posterior will be replaced by a hierachical approximate posterior depending on whether using variable selection and which kind of distribution was sampled in the previous layer(s).
 

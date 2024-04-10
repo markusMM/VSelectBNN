@@ -1,43 +1,52 @@
-#%% -- imports --
+# %% Docstring
+"""
+Run Simple Recurrent Neural Net
+
+Here we use a Kaggle dataset for bike renting (accumulated), including many standard variables.
+These networks are estimating a half-Cauchy distributed accumulated renting rate.
+Thus, the algorithms uses the Expectation Lower Bound Optimization sampling with Bayes by Backprop
+to solve this task.
+"""
+# %% -- imports --
 import numpy as np
 import torch
 from torch import optim
 from vRB3_beta import MLP_BBB, RNN_BBB, SRN_BBB, C1B3, CNN_BBB
 from BBBopt_beta import sample_elbo
+    
+# %% helper functions
 
-#%% -- main --
-if ( __name__ == '__main__' ):
-    
-    #%% helper function
-    
-    def batch_idx(idx,N=1000):
-        M = np.ceil(idx.shape[0]/N).astype(int)
-        b_idx = []
-        for i in range(M):
-            if i >= M-1:
-                b_idx.append(idx[i*N:])
-            else:
-                b_idx.append(idx[i*N:(i+1)*N])
-        return b_idx
-    
-    def list_stringification(in_list):
-        if type(in_list) != type([]):
-            try:
-                if type(in_list) == type(''):
-                    in_list = '"'+in_list+'"'
-                else:
-                    in_list = str(in_list)
-                return in_list
-            except Exception as e:
-                print('ERROR: This function annot stringify:')
-                print(in_list)
-                print(e)
-                return ''
+def batch_idx(idx,N=1000):
+    M = np.ceil(idx.shape[0]/N).astype(int)
+    b_idx = []
+    for i in range(M):
+        if i >= M-1:
+            b_idx.append(idx[i*N:])
         else:
-            str_out = '[' + ', '.join(list(
-                    map( lambda x: list_stringification(x), in_list )
-                    )) + ']'
-            return str_out
+            b_idx.append(idx[i*N:(i+1)*N])
+    return b_idx
+
+def list_stringification(in_list):
+    if type(in_list) != type([]):
+        try:
+            if type(in_list) == type(''):
+                in_list = '"'+in_list+'"'
+            else:
+                in_list = str(in_list)
+            return in_list
+        except Exception as e:
+            print('ERROR: This function annot stringify:')
+            print(in_list)
+            print(e)
+            return ''
+    else:
+        str_out = '[' + ', '.join(list(
+                map( lambda x: list_stringification(x), in_list )
+                )) + ']'
+        return str_out
+
+# %% -- main --
+if ( __name__ == '__main__' ):
     
     #%% testing evironment
     

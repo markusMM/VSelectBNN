@@ -86,7 +86,7 @@ TODO:
     - other networks like this e.g. convolutional one (Laumann 12/12/2018)
     
 """
-#%% -- imports --
+# %% -- imports --
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -107,7 +107,7 @@ from SignalTorch import ConvT
 
 cpi = torch.Tensor([math.pi])
 
-#%% -- some function(s) --
+# %% -- some function(s) --
 
 def roll(x, n):  
     return torch.cat((x[-n:], x[:-n]))
@@ -166,14 +166,14 @@ def eval_prop(prop):
         return prop
 
 ################################
-#%% -- standard linear B3 --
+# %% -- standard linear B3 --
 
 class LB3_Normal(nn.Module):
     """
-        Layer of our BNN.
-        
-        implementation: (Feldman 12/17/2018)
-        theory and initial work: (Blundell et al 05/21/2015)
+    Normal Layer of our Bayesian Neural Net.
+    
+    implementation: (Feldman 12/17/2018)
+    theory and initial work: (Blundell et al 05/21/2015)
     """
     def __init__(self, 
                  input_features, output_features, 
@@ -184,8 +184,8 @@ class LB3_Normal(nn.Module):
                  dropout_flag = False, 
         ):
         """
-            Initialization of our layer : our prior is a normal distribution
-            centered in 0 and of variance 1.
+        Initialization of our layer : our prior is a normal distribution
+        centered in 0 and of variance 1.
         """
         # checking the device first to see if it is available
         device = device_check(device)
@@ -352,10 +352,10 @@ class LB3_Normal(nn.Module):
 #%% -- cauchy version --
 class LB3_Cauchy(nn.Module):
     """
-        Layer of our BNN.
-        
-        implementation: (Feldman 12/17/2018)
-        theory and initial work: (Blundell et al 05/21/2015)
+    Cauchy Layer of our BNN.
+    
+    implementation: (Feldman 12/17/2018)
+    theory and initial work: (Blundell et al 05/21/2015)
     """
     def __init__(self, 
                  input_features, output_features, 
@@ -366,8 +366,8 @@ class LB3_Cauchy(nn.Module):
                  dropout_flag = False, 
                  ):
         """
-            Initialization of our layer : our prior is a normal distribution
-            centered in 0 and of variance 1.
+        Initialization of our layer : our prior is a normal distribution
+        centered in 0 and of variance 1.
         """
         # checking the device first to see if it is available
         device = device_check(device)
@@ -542,10 +542,10 @@ class LB3_Cauchy(nn.Module):
 #%%
 class LB3_HalfCauchy(nn.Module):
     """
-        Layer of our BNN.
-        
-        implementation: (Feldman 12/17/2018)
-        theory and initial work: (Blundell et al 05/21/2015)
+    Half Cauchy Layer of our Baysian Neural Net.
+    
+    implementation: (Feldman 12/17/2018)
+    theory and initial work: (Blundell et al 05/21/2015)
     """
     def __init__(self, 
                  input_features, output_features, 
@@ -556,12 +556,12 @@ class LB3_HalfCauchy(nn.Module):
                  dropout_flag = False, 
                  ):
         """
-            Initialization of our layer : our prior is a normal distribution
-            centered in 0 and of variance 1.
+        Initialization of our layer : our prior is a normal distribution
+        centered in 0 and of variance 1.
         """
         # checking the device first to see if it is available
         device = device_check(device)
-        
+
         # initialize layers
         super().__init__()
         # set input and output dimensions
@@ -573,55 +573,54 @@ class LB3_HalfCauchy(nn.Module):
 
         #initialize mu and rho parameters for the layer's bias
         self.b_rho = nn.Parameter(torch.rand(output_features))
-        
+
         # initialize Bernoulli Dropout probabilities
         if dropout_flag:
             self.z_pies = nn.Parameter(torch.rand(input_features))
-        
+
         # in case z willbe given in the forward call
         self.dropout_prior = Bernoulli(torch.tensor(prior_pies).to(device))
-        
+
         #initialize weight samples (these will be calculated whenever the layer makes a prediction)
         self.w = None
         self.b = None
         self.z = None
-        
+
         # initialize prior distribution for all of the weights and biases
         self.prior = HalfCauchy(prior_var)
-        
+
         # flags for later calculations
         self.use_bias = use_bias
         self.dropout_flag = dropout_flag
-        
+
         # this has to be the same device type, you sent the network to
         self.device = device
-        
+
         self.to(self.device)
-    
+
     def log_like(self, o, y, noise_tol = 0.1 ):
         return HalfCauchy(noise_tol).log_prob(y).mean()
-    
+
     def forward(
             self, input, 
             w_epsilon = None, b_epsilon = None, z_epsilon = None, 
             sample_var = 1.0, n_sample = 1, z = None, z_pies = None, 
         ):
         """
-          Optimization process
-          inputs:
-              - input           .. a tensor batch of shape (N_batch x D_dim)
-              - sample_var      .. variance to noisify the parameters artificially
-              - *_epsilon       .. presamples from the 0-mean 1-var normal for reuse
-          outputs:
-              - a linear feed forward calculation using the sampled weights and biases
-          records:
-              - *_epsilon       .. samples from the 0-mean 1-var normal for reuse
-              - *_log_prior     .. log prior of the respective parameter
-              - *_log_post      .. log posterior of the respective parameter
-              - log_prior       .. overall sample log prior
-              - log_post        .. overall sample log posterior
+      Optimization process
+      inputs:
+          - input           .. a tensor batch of shape (N_batch x D_dim)
+          - sample_var      .. variance to noisify the parameters artificially
+          - *_epsilon       .. presamples from the 0-mean 1-var normal for reuse
+      outputs:
+          - a linear feed forward calculation using the sampled weights and biases
+      records:
+          - *_epsilon       .. samples from the 0-mean 1-var normal for reuse
+          - *_log_prior     .. log prior of the respective parameter
+          - *_log_post      .. log posterior of the respective parameter
+          - log_prior       .. overall sample log prior
+          - log_post        .. overall sample log posterior
         """
-        
         if type(w_epsilon) != type(None):
             S = w_epsilon.shape[0]
         else:
@@ -721,10 +720,10 @@ class LB3_HalfCauchy(nn.Module):
 #%%
 class LB3_Exponential(nn.Module):
     """
-        Layer of our BNN.
-        
-        implementation: (Feldman 12/17/2018)
-        theory and initial work: (Blundell et al 05/21/2015)
+    Exponential Layer of our Bayesian Neural Net.
+    
+    implementation: (Feldman 12/17/2018)
+    theory and initial work: (Blundell et al 05/21/2015)
     """
     def __init__(self, 
                  input_features, output_features, 
@@ -735,8 +734,8 @@ class LB3_Exponential(nn.Module):
                  dropout_flag = False, 
                  ):
         """
-            Initialization of our layer : our prior is a normal distribution
-            centered in 0 and of variance 1.
+        Initialization of our layer : our prior is a normal distribution
+        centered in 0 and of variance 1.
         """
         # checking the device first to see if it is available
         device = device_check(device)
@@ -786,19 +785,19 @@ class LB3_Exponential(nn.Module):
             sample_var = 1.0, n_sample = 1, z = None, z_pies = None, 
         ):
         """
-          Optimization process
-          inputs:
-              - input           .. a tensor batch of shape (N_batch x D_dim)
-              - sample_var      .. variance to noisify the parameters artificially
-              - *_epsilon       .. presamples from the 0-mean 1-var normal for reuse
-          outputs:
-              - a linear feed forward calculation using the sampled weights and biases
-          records:
-              - *_epsilon       .. samples from the 0-mean 1-var normal for reuse
-              - *_log_prior     .. log prior of the respective parameter
-              - *_log_post      .. log posterior of the respective parameter
-              - log_prior       .. overall sample log prior
-              - log_post        .. overall sample log posterior
+      Optimization process
+      inputs:
+          - input           .. a tensor batch of shape (N_batch x D_dim)
+          - sample_var      .. variance to noisify the parameters artificially
+          - *_epsilon       .. presamples from the 0-mean 1-var normal for reuse
+      outputs:
+          - a linear feed forward calculation using the sampled weights and biases
+      records:
+          - *_epsilon       .. samples from the 0-mean 1-var normal for reuse
+          - *_log_prior     .. log prior of the respective parameter
+          - *_log_post      .. log posterior of the respective parameter
+          - log_prior       .. overall sample log prior
+          - log_post        .. overall sample log posterior
         """
         
         if type(w_epsilon) != type(None):
@@ -913,10 +912,10 @@ class LB3_Exponential(nn.Module):
 
 class Conv1D_BBB(nn.Module):
     """
-        Layer of our BNN.
-        
-        implementation: Nils-Markus Meister
-        theory and initial work: (Blundell et al 05/21/2015)
+    1D Convolutional Layer of our Bayesian Neural Net.
+    
+    implementation: Nils-Markus Meister
+    theory and initial work: (Blundell et al 05/21/2015)
     """
     def __init__(self, 
                  input_features, filter_length, 
@@ -929,8 +928,8 @@ class Conv1D_BBB(nn.Module):
                  activation_function = None, 
         ):
         """
-            Initialization of our layer : our prior is a normal distribution
-            centered in 0 and of variance 1.
+        Initialization of our layer : our prior is a normal distribution
+        centered in 0 and of variance 1.
         """
         # checking the device first to see if it is available
         device = device_check(device)
@@ -1092,12 +1091,18 @@ class Conv1D_BBB(nn.Module):
         self.b_epsilon = torch.zeros((S,x.shape[-1]))
         
         return x
-    
-###############################################################################
-#%% -- Drop Out Layers --
+
+# %% -- Drop Out Layers --
 
 class Bernoulli_DB3(nn.Module):
+    """
+    Bernoulli Dropout Beayes by Backprop
+
+    This Layer uses a Bernoulli prior and posterior to determine
+    the output to be dropped out.
+    The parameter for the final posterior is variable.
     
+    """
     def __init__(
                 self,
                 n_units, pi_prior = .3, 
@@ -1119,7 +1124,7 @@ class Bernoulli_DB3(nn.Module):
         
         # coin flips
         self.pies = nn.Parameter(0.45*torch.rand(n_units)).to(device)
-        
+
         self.device = device
         self.to(device)
         
@@ -1150,7 +1155,7 @@ class Bernoulli_DB3(nn.Module):
         
         # input dimensions
         H = self.n_units
-        #gamma = self.gamma
+        # gamma = self.gamma
         S = n_sample
         
         # getting the standard deviation for annealing variance
@@ -1174,7 +1179,8 @@ class Bernoulli_DB3(nn.Module):
         # record log prior by evaluating log pdf of prior at sampled weight and bias
         w_log_prior = self.prior.log_prob(self.w)
         
-        # record log variational posterior by evaluating log pdf of normal distribution defined by parameters with respect at the sampled values
+        # record log variational posterior by evaluating log pdf of the distribution 
+        # defined by parameters with respect at the sampled values.
         self.w_post = Bernoulli(self.pies).log_prob(self.w)
         
         
@@ -1188,7 +1194,7 @@ class Bernoulli_DB3(nn.Module):
 
         return self.w
         
-#%% -- time filter layer --
+# %% -- time filter layer --
 class UB3(nn.Module):
     
     def __init__(

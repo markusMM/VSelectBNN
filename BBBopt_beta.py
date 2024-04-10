@@ -1,8 +1,23 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Oct 14 05:16:31 2019
+Bayes by Backprop Optimization
 
-@author: Master
+This is implementing using ELBO Expectation Lower Bound optimization through sampling 
+to sample most probable states for the prior/posterior distribution.
+
+NOTE:
+    Currently, here, only the floowing distributions are natively supported:
+        - (Half-)Normal
+        - Exponential
+        - (Half-)Cauchy
+
+Methods:
+    :meth:`K_recurs` - A recursive function getting the k'th state from a list of states.
+    :meth:`p_recurs` - A recursive parameter stacking function. Stacks 1 param to all lists.
+    :meth:`sample_elbo` - The main ELBO sampling function to optimize a given model.
+
+Created on Mon Oct 14 05:16:31 2019
+@author: Markus Meister
 """
 #%% -- imports --
 
@@ -35,7 +50,32 @@ def sample_elbo(
         data_noise = 1.0e-07, 
         verbose = False,
     ):
-    # we calculate the negative elbo, which will be our loss function
+    """ Sample ELBO
+    
+    We calculate the negative elbo, which will be our loss function, given our variational states.
+    This loss will be back propagated given the distributions' and other parameters.
+
+    NOTE:
+    The given model needs the following parameters:
+        - K .. the number of considered stated for variational sampling
+        - S .. number of maximal states for variational sampling
+        - K_ .. number f previously considered states
+        - variatonal_states .. a dictionary with the following samples (noise only)
+            - w_epsilon .. for the weights
+            - b_epsilon .. tor the biases
+            - z_epsilon .. for the likelihood
+
+    :param model: A model with the necessary parameters (see above).
+    :param input: The model input data.
+    :param target: The model target data (NaNs shall be estimated by the model).
+    :param S: Max. no. samples.
+    :param K: Cur. no. considered samples.
+    :param sample_var: Sampling variance for state selection.
+    :param loglike_method: (Optional) special method for log-likelihood calculation.
+    :param data_noise: Additional noise variance for the input data itself.
+    :param verbose: Wether to output computation steps during this call.
+    :returns: The negative ELBO, the expectation activation.
+    """
     
     if type(loglike_method) == type(None):
         loglike_method = model.loglike_method

@@ -87,8 +87,6 @@ class S_Layer(nn.Module):
         expSigma  = torch.exp(self.sigma / (L-1))
         X = ( x * expSigma[:,None,None] * torch.ones(D,L,K) * expjOmega ).sum(dim=-2)
         
-        X = ComplexTensor(torch.fft(-torch,1))
-        
         if abs_flag:
             X = X.abs()
         if log_flag:

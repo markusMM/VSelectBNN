@@ -1,5 +1,5 @@
 # VSelectBNN
-Another version for probabilistic weights and variable selection sampling.
+Bayes-by-Backprop using probabilistic variable selection sampling and coefficients.
 
 This repositiory basically reproduces Bayes by Backprop in a minimalistic way and uses optimization in form of creeping (unparameterized) samples. This, especially in the variable selection problem, assuming a Bernoulli prior, provides a marginal distribution over many possible frozen states of the system.
 
